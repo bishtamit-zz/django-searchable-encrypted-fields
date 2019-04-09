@@ -1,5 +1,6 @@
 stages:
     - format
+    - test
 
 black_formatting:
   image: python:3.7-slim-stretch
@@ -16,4 +17,8 @@ black_formatting:
   # # mark as 'passed with warning'
   allow_failure: true
   
-  
+code_test:
+  stage: test
+  image: themattrix/tox
+  script:
+    - tox  
