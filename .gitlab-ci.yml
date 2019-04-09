@@ -20,5 +20,10 @@ black_formatting:
 code_test:
   stage: test
   image: themattrix/tox
+  services:
+    - postgres:10-alpine
+  variables:
+    POSTGRES_DB: ci
+
   script:
     - tox  
