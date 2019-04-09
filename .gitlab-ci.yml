@@ -1,0 +1,19 @@
+stages:
+    - format
+
+black_formatting:
+  image: python:3.7-slim-stretch
+  stage: format
+  
+  before_script:
+    - pip install black
+
+  script:
+    # use black on the code
+    # '--check' returns error code 1, if something needs formatting
+    - black . --check --exclude '\.venv/|\.local/|\.cache/|\.git/|migrations/'
+
+  # # mark as 'passed with warning'
+  allow_failure: true
+  
+  
