@@ -1,0 +1,5 @@
+[run]
+include = encrypted_fields/*, encrypted_fields/management/*
+omit = *migrations*, *tests*
+plugins =
+    django_coverage_plugin
