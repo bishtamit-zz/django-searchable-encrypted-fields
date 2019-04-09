@@ -1,7 +1,8 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.db import connection, models as dj_models
+from django.utils import timezone
 import pytest
 
 from encrypted_fields import fields
@@ -9,7 +10,7 @@ from . import models
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
-DATETIME1 = datetime.utcnow()
+DATETIME1 = timezone.now()
 DATETIME2 = DATETIME1 + timedelta(minutes=5)
 
 

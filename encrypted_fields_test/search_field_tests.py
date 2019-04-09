@@ -1,9 +1,10 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 import string
 
 import pytest
 from django.core.exceptions import FieldError, ImproperlyConfigured, ValidationError
 from django.db import connection, models as dj_models
+from django.utils import timezone
 from django.contrib.admin.widgets import (
     AdminTextInputWidget,
     AdminIntegerFieldWidget,
@@ -23,7 +24,7 @@ pytestmark = pytest.mark.django_db
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
-DATETIME1 = datetime.utcnow()
+DATETIME1 = timezone.now()
 DATETIME2 = DATETIME1 + timedelta(minutes=5)
 
 
