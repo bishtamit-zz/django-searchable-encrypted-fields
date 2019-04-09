@@ -14,8 +14,7 @@ black_formatting:
     # '--check' returns error code 1, if something needs formatting
     - black . --check --exclude '\.venv/|\.local/|\.cache/|\.git/|migrations/'
 
-  # # mark as 'passed with warning'
-  allow_failure: true
+  allow_failure: false
   
 code_test:
   stage: test
@@ -24,6 +23,5 @@ code_test:
     - postgres:10-alpine
   variables:
     POSTGRES_DB: ci
-
   script:
     - tox  

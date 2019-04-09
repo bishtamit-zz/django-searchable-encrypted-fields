@@ -85,14 +85,14 @@ DATABASES = {
 if os.environ.get("USE_PG"):
     print("using postgres...")
     DATABASES = {
-     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ci',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'postgres',
-        'PORT': '5432',
-    },
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": "ci",
+            "USER": "postgres",
+            "PASSWORD": "postgres",
+            "HOST": "postgres",
+            "PORT": "5432",
+        }
     }
 
 # Password validation
