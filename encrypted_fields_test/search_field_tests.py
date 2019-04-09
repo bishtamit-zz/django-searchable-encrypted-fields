@@ -1,5 +1,6 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 import string
+import os
 
 import pytest
 from django.core.exceptions import FieldError, ImproperlyConfigured, ValidationError
@@ -24,7 +25,9 @@ pytestmark = pytest.mark.django_db
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
-DATETIME1 = timezone.now()
+DATETIME1 = datetime.utcnow()
+if os.environ.get("USE_PG"):  # sqlite is not timezone compatible but postgres is.
+    DATETIME1 = timezone.now()
 DATETIME2 = DATETIME1 + timedelta(minutes=5)
 
 

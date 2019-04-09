@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+import os
 
 from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.db import connection, models as dj_models
@@ -10,7 +11,9 @@ from . import models
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
-DATETIME1 = timezone.now()
+DATETIME1 = datetime.utcnow()
+if os.environ.get("USE_PG"):  # sqlite is not timezone compatible but postgres is.
+    DATETIME1 = timezone.now()
 DATETIME2 = DATETIME1 + timedelta(minutes=5)
 
 
