@@ -1,6 +1,7 @@
 stages:
     - format
     - test
+    - release
 
 black_formatting:
   image: python:3.7-slim-stretch
@@ -24,4 +25,15 @@ code_test:
   variables:
     POSTGRES_DB: ci
   script:
-    - tox  
+    - tox
+
+pypi_release:
+  stage: release
+  image: python:3.7-slim-stretch
+  script:
+    - pip install twine
+    - python setup.py sdist
+    - twine upload dist/*
+  only:
+    - tags
+  when: manual
