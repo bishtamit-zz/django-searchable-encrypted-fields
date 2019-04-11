@@ -89,7 +89,6 @@ class TestSearchFieldQueries:
         obj = model.objects.create(search=vals[0])
         obj.search = vals[1]
         obj.save()
-        # model.objects.update(search=vals[1])
         found = model.objects.get()
 
         assert found.search == vals[1]

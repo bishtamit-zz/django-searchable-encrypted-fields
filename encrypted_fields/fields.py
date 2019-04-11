@@ -42,15 +42,15 @@ class EncryptedFieldMixin(models.Field):
     def __init__(self, *args, **kwargs):
         if kwargs.get("primary_key"):
             raise ImproperlyConfigured(
-                "%s does not support primary_key=True." % self.__class__.__name__
+                f"{self.__class__.__name__} does not support primary_key=True."
             )
         if kwargs.get("unique"):
             raise ImproperlyConfigured(
-                "%s does not support unique=True." % self.__class__.__name__
+                f"{self.__class__.__name__} does not support unique=True."
             )
         if kwargs.get("db_index"):
             raise ImproperlyConfigured(
-                "%s does not support db_index=True." % self.__class__.__name__
+                f"{self.__class__.__name__} does not support db_index=True."
             )
         self._internal_type = "BinaryField"
         super().__init__(*args, **kwargs)
@@ -306,9 +306,7 @@ class SearchField(models.CharField):
 def get_prep_lookup_error(self):
     """Raise errors for unsupported lookups"""
     raise FieldError(
-        "{} does not support '{}' lookups".format(
-            self.lhs.field.__class__.__name__, self.lookup_name
-        )
+        f"{self.lhs.field.__class__.__name__} does not support '{self.lookup_name}' lookups"
     )
 
 
