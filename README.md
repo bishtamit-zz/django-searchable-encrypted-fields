@@ -68,7 +68,10 @@ But when using `update()` you need to provide the value to both fields:
 ```python
 Person.objects.filter(name="Jo").update(name="Bob", _name_data="Bob")
 ```
-A SearchField inherits the validators and formfield (widget) from its associated EncryptedField. So you should not include the EncryptedField in forms, instead just display the SearchField.
+A SearchField inherits the validators and formfield (widget) from its associated EncryptedField. So:
+
+1. Do not add validators or form widgets to SearchFields (they will be ignored), add them to the associated EncryptedField instead.
+2. Do not include the EncryptedField in forms, instead just display the SearchField.
 
 ## Included EncryptedField classes
 The following are included:
@@ -97,6 +100,8 @@ You can use the included Django management command which will print appropriate 
 $ python manage.py generate_key
 ```
 Note: encryption keys **must** be hex encoded and 32 bytes
+
+**Important**: use different hash_key values for each SearchField and make sure they are different from any keys in `settings.FIELD_ENCRYPTION_KEYS`.
 ## Rotating Encryption Keys
 If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION_KEYS` with a new key. This new key (the first in the list) will be used for encrypting/decrypting all data. If decrypting data fails (because it was encrypted with an older key), each key in the list is tried.
 ## Compatability
