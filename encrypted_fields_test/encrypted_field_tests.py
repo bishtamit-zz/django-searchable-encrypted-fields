@@ -32,15 +32,65 @@ class TestEncryptedField:
             f = fields.EncryptedTextField()
             f.keys
 
-    def test_key_rotation(self, settings):
+    def test_key_rotation(self, settings, db):
         """Can supply multiple `keys` for key rotation."""
         settings.FIELD_ENCRYPTION_KEYS = [
             "f164ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
             "e364ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
         ]
-        f = fields.EncryptedTextField()
+        # clear keys cached_property if populated
+        field1 = models.EncryptedChar._meta.get_field("value")
+        if field1.keys:
+            del field1.keys
+        keys = field1.keys
+        # keys will be re-populated here
+        models.EncryptedChar.objects.create(value="hello")
+        m1 = models.EncryptedChar.objects.first()
+        assert m1.value == "hello"
 
-        # TODO: implement
+        # clear keys cached_property again
+        del field1.keys
+        settings.FIELD_ENCRYPTION_KEYS = [
+            "d244ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+            "f164ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+            "e364ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+        ]
+
+        m1 = models.EncryptedChar.objects.first()
+        # can still decrypt after prepending a new key to key list.
+        assert m1.value == "hello"
+        # make sure keys property did change
+        assert keys != field1.keys
+
+        models.EncryptedChar.objects.create(value="world")
+        m2 = models.EncryptedChar.objects.last()
+        assert m2.value == "world"
+
+    def test_wrong_key(self, settings, db):
+        """Raise Exception when invalid key."""
+        settings.FIELD_ENCRYPTION_KEYS = [
+            "d244ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+            "f164ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+            "e364ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+        ]
+        # clear keys cached_property
+        field1 = models.EncryptedChar._meta.get_field("value")
+        del field1.keys
+        # keys will be re-populated here
+        models.EncryptedChar.objects.create(value="hello")
+        m1 = models.EncryptedChar.objects.first()
+        assert m1.value == "hello"
+
+        # clear keys cached_property again
+        del field1.keys
+        settings.FIELD_ENCRYPTION_KEYS = [
+            "f164ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+            "e364ec6bd6fbc4aef5647abc15199da0f9badcc1d2127bde2087ae0d794a9a0b",
+        ]
+        # keys property will now repopulate...
+        with pytest.raises(ValueError):
+            # Exception raised because of invalid key.
+            models.EncryptedChar.objects.first()
 
     @pytest.mark.parametrize("key", ["primary_key", "db_index", "unique"])
     def test_not_allowed(self, key):
