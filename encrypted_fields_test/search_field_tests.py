@@ -16,7 +16,6 @@ from django.contrib.admin.widgets import (
 )
 
 from encrypted_fields import fields
-from encrypted_fields.management.commands import generate_key
 
 from . import models
 
@@ -44,15 +43,6 @@ def test_must_have_hash_key():
 def test_must_have_encrypted_field_name():
     with pytest.raises(ImproperlyConfigured):
         fields.SearchField(hash_key="aa", encrypted_field_name=None)
-
-
-def test_generate_key_command(capfd):
-    generate_key.Command().execute(no_color=True, force_color=False)
-    output = capfd.readouterr()
-    # do not include 'new line' (\n) in output
-    assert len(output.out[:-1]) == 64
-    for char in output.out[:-1]:
-        assert char in string.hexdigits
 
 
 @pytest.mark.parametrize(
