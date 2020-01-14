@@ -44,7 +44,7 @@ Note, however, that primary_key, unique and db_index are not supported because t
 ```python
 class Person(models.Model):
     _name_data = fields.EncryptedCharField(max_length=50, editable=False)
-    name = fields.SearchField(encrypted_data_field="_name_data", hash_key="f164ec6bd...7ae0d794a9a0b")
+    name = fields.SearchField(hash_key="f164ec6bd...7ae0d794a9a0b", encrypted_field_name="_name_data", )
     favorite_number = fields.EncryptedIntegerField()
     city = models.CharField(max_length=255) # regular Django model field
 ```
