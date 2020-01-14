@@ -101,8 +101,9 @@ $ python manage.py shell
 >>> import secrets
 >>> secrets.token_hex(32)
 ```
-Note: encryption keys **must** be hex encoded and 32 bytes
 Note: Thanks to Andrew Mendoza for the suggestion.
+
+Note: encryption keys **must** be hex encoded and 32 bytes
 
 **Important**: use different hash_key values for each SearchField and make sure they are different from any keys in `settings.FIELD_ENCRYPTION_KEYS`.
 ## Rotating Encryption Keys
