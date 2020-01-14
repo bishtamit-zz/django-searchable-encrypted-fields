@@ -4,7 +4,7 @@ This package is for you if you would like to encrypt model field data "in app" -
 **Why another encrypted field package?**
 
 1. We use AES-256 encryption with GCM mode (via the Pycryptodome library).
-2. There is a django command to easily generate appropriate encryption keys.
+2. It is easy to generate appropriate encryption keys with `secrets.token_hex(32)` from the standard library.
 3. You can make 'exact' search lookups when also using the SearchField.
 
 ## Install & Setup
@@ -95,11 +95,14 @@ class EncryptedIPAddressField(EncryptedFieldMixin, models.GenericIPAddressField)
 ```
 Please let us know if you have problems when doing this.
 ## Generating Encryption Keys
-You can use the included Django management command which will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
+You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
-$ python manage.py generate_key
+$ python manage.py shell
+>>> import secrets
+>>> secrets.token_hex(32)
 ```
 Note: encryption keys **must** be hex encoded and 32 bytes
+Note: Thanks to Andrew Mendoza for the suggestion.
 
 **Important**: use different hash_key values for each SearchField and make sure they are different from any keys in `settings.FIELD_ENCRYPTION_KEYS`.
 ## Rotating Encryption Keys
