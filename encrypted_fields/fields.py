@@ -35,7 +35,7 @@ __all__ = [
 
 class EncryptedFieldMixin(models.Field):
     """A field that encrypts values with AES 256 symmetric encryption,
-     using Pycryptodome.
+    using Pycryptodome.
 
     """
 
@@ -264,10 +264,10 @@ class SearchField(models.CharField):
 
     def formfield(self, **kwargs):
         """Use formfield from self.encrypted_field_name,
-         but using this field's verbose_name as the label.
+        but using this field's verbose_name as the label.
 
-         If called by Admin Panel then change to appropriate widget.
-         """
+        If called by Admin Panel then change to appropriate widget.
+        """
         defaults = {"label": capfirst(self.verbose_name)}
         if issubclass(kwargs.get("widget"), AdminTextInputWidget):
             # is Admin Panel and we should change to appropriate widget.
@@ -292,8 +292,7 @@ class SearchField(models.CharField):
         return self.model._meta.get_field(self.encrypted_field_name).formfield(**kwargs)
 
     def clean(self, value, model_instance):
-        """Validate value against the validators from self.encrypted_field_name.
-        """
+        """Validate value against the validators from self.encrypted_field_name."""
         return model_instance._meta.get_field(self.encrypted_field_name).clean(
             value, model_instance
         )

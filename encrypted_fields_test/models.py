@@ -1,5 +1,7 @@
 from django.db import models
 from django.core import validators
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from encrypted_fields import fields
 
 
@@ -100,3 +102,23 @@ class DemoModel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class User(AbstractUser):
+    """Example of replacing 'username' with Search and Encryption fields.
+
+    Note we add the unique constraint to the SearchField."""
+
+    username_validator = UnicodeUsernameValidator()
+    _username = fields.EncryptedCharField(
+        max_length=150, validators=[username_validator]
+    )
+    username = fields.SearchField(
+        hash_key="abc123",
+        encrypted_field_name="_username",
+        unique=True,
+        error_messages={
+            "unique": "Custom error message for already exists.",
+        },
+    )
+    USERNAME_FIELD = "username"

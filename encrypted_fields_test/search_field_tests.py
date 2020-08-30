@@ -4,6 +4,7 @@ import os
 
 import pytest
 from django.core.exceptions import FieldError, ImproperlyConfigured, ValidationError
+from django.db.utils import IntegrityError
 from django.db import connection, models as dj_models
 from django.utils import timezone
 from django.contrib.admin.widgets import (
@@ -14,6 +15,8 @@ from django.contrib.admin.widgets import (
     AdminSplitDateTime,
     AdminDateWidget,
 )
+from django.contrib.auth import get_user_model
+from django.test import Client
 
 from encrypted_fields import fields
 
@@ -21,6 +24,8 @@ from . import models
 
 
 pytestmark = pytest.mark.django_db
+
+User = get_user_model()
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
@@ -171,3 +176,83 @@ def test_form_field():
     m = models.SearchDateTime(search="2019-03-03")
     x = m._meta.get_field("search").formfield(**kwargs)
     assert isinstance(x.widget, AdminSplitDateTime)
+
+
+class TestCustomUserModel:
+    def test_unique_constraint(self):
+        # Unique constraint is on the SearchField called 'username'
+        user = User.objects.create_user(username="foo")
+        with pytest.raises(IntegrityError):
+            User.objects.create(username="foo")
+
+    def test_unique_validation(self):
+        # Unique validation is on the SearchField called 'username'
+        User.objects.create_user(username="foo")
+        user = User(username="foo", password="123Frsdsdsd9tryyrh")
+        with pytest.raises(ValidationError) as e:
+            user.full_clean(exclude=["_username"])
+        assert "Custom error message for already exists" in str(e)
+        user2 = User(username="foobar", password="123Frsdsdsd9tryyrh")
+        # full_clean passes because username is different
+        user2.full_clean(exclude=["_username"])
+        user2.full_clean()
+
+    def test_authentication(self):
+        User.objects.create_user(username="foo", password="123Frsdsdsd9tryyrh")
+        c = Client()
+        assert c.login(username="foo", password="fake") is False
+        assert c.login(username="foobar", password="fake") is False
+        assert c.login(username="foo", password="123Frsdsdsd9tryyrh") is True
+
+    def test_login_view(self):
+        User.objects.create_user(username="foo", password="123Frsdsdsd9tryyrh")
+        c = Client()
+        response = c.post(
+            "/accounts/login/", {"username": "foo", "password": "123Frsdsdsd9tryyrh"}
+        )
+        assert response.status_code == 302  # redirects to "profile" by default
+
+    def test_superuser_authentication(self):
+        User.objects.create_superuser(
+            username="foo", password="123Frsdsdsd9tryyrh", email="a@b.com"
+        )
+        c = Client()
+        assert c.login(username="foo", password="fake") is False
+        assert c.login(username="foobar", password="fake") is False
+        assert c.login(username="foo", password="123Frsdsdsd9tryyrh") is True
+
+    def test_admin_login_view(self):
+        User.objects.create_user(username="foo", password="123Frsdsdsd9tryyrh")
+        c = Client()
+        response = c.post("/admin/login/", {"username": "foo", "password": "fake"})
+        assert response.status_code == 200
+        assert (
+            "Please enter the correct username and password for a staff account"
+            in response.content.decode()
+        )
+
+        response = c.post(
+            "/admin/login/", {"username": "foo", "password": "123Frsdsdsd9tryyrh"}
+        )
+        assert response.status_code == 200
+        assert (
+            "Please enter the correct username and password for a staff account"
+            in response.content.decode()
+        )
+
+        User.objects.create_superuser(
+            username="foobar", password="123Frsdsdsd9tryyrh", email="b@a.com"
+        )
+        response = c.post("/admin/login/", {"username": "foobar", "password": "fake"})
+        assert response.status_code == 200
+        assert (
+            "Please enter the correct username and password for a staff account"
+            in response.content.decode()
+        )
+
+        response = c.post(
+            "/admin/login/?next=/admin/",
+            {"username": "foobar", "password": "123Frsdsdsd9tryyrh"},
+        )
+        assert response.status_code == 302
+        assert response.url == "/admin/"
