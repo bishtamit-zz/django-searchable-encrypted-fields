@@ -73,6 +73,10 @@ A SearchField inherits the validators and formfield (widget) from its associated
 1. Do not add validators or form widgets to SearchFields (they will be ignored), add them to the associated EncryptedField instead.
 2. Do not include the EncryptedField in forms, instead just display the SearchField.
 
+**Note** Although unique validation (and unique constraints at the database level) for an EncryptedField makes little sense, it is possible to add `unique=True` to a SearchField.
+
+An example of when this makes sense is in a custom user model, where the `username` field is replaced with an `EncryptedCharField` and `SearchField`. Please see the custom user model in `encrypted_fields_test.models` and its tests for an example.
+
 ## Included EncryptedField classes
 The following are included:
 ```python
@@ -109,6 +113,6 @@ Note: encryption keys **must** be hex encoded and 32 bytes
 ## Rotating Encryption Keys
 If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION_KEYS` with a new key. This new key (the first in the list) will be used for encrypting/decrypting all data. If decrypting data fails (because it was encrypted with an older key), each key in the list is tried.
 ## Compatability
-`django-searchable-encrypted-fields` is tested with Django(2.1, 2.2) on Python(3.6, 3.7) using SQLite and PostgreSQL.
+`django-searchable-encrypted-fields` is tested with Django(2.1, 2.2, 3.0, 3.1) on Python(3.6, 3.7, 3.8) using SQLite and PostgreSQL (10 and 11).
 
 Test coverage is at 96%.
