@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.conf import settings
 
-from .models import DemoModel
+from .models import DemoModel, User
 
 admin.AdminSite.site_header = "Field Test Admin"
 
@@ -22,3 +22,8 @@ class DemoModelAdmin(admin.ModelAdmin):
     readonly_fields = ("_name_data", "_number_data", "_email_data", "_date_data")
 
     search_fields = ("email__exact", "name__exact", "date__exact", "number__exact")
+
+
+@admin.register(User)
+class UserModelAdmin(admin.ModelAdmin):
+    pass

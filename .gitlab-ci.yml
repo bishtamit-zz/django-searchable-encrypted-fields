@@ -24,6 +24,22 @@ code_test:
     - postgres:10-alpine
   variables:
     POSTGRES_DB: ci
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_HOST_AUTH_METHOD: trust
+  script:
+    - tox
+
+code_test_pg11:
+  stage: test
+  image: themattrix/tox
+  services:
+    - postgres:11-alpine
+  variables:
+    POSTGRES_DB: ci
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_HOST_AUTH_METHOD: trust
   script:
     - tox
 
