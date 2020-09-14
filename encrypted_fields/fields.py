@@ -1,5 +1,6 @@
 import hashlib
 import string
+from inspect import isclass
 
 from Crypto.Cipher import AES
 from django.conf import settings
@@ -14,6 +15,7 @@ from django.contrib.admin.widgets import (
     AdminIntegerFieldWidget,
     AdminBigIntegerFieldWidget,
     AdminSplitDateTime,
+    AdminTextareaWidget,
 )
 
 
@@ -268,8 +270,11 @@ class SearchField(models.CharField):
 
         If called by Admin Panel then change to appropriate widget.
         """
-        defaults = {"label": capfirst(self.verbose_name)}
-        if issubclass(kwargs.get("widget"), AdminTextInputWidget):
+        defaults = {}
+        if kwargs.get("label") is None:
+            defaults.update({"label": capfirst(self.verbose_name)})
+        widget = kwargs.get("widget")
+        if isclass(widget) and issubclass(widget, AdminTextInputWidget):
             # is Admin Panel and we should change to appropriate widget.
             encrypted_field = self.model._meta.get_field(self.encrypted_field_name)
             if isinstance(encrypted_field, EncryptedEmailField):
@@ -288,6 +293,8 @@ class SearchField(models.CharField):
                 defaults.update({"widget": AdminIntegerFieldWidget})
             elif isinstance(encrypted_field, EncryptedBigIntegerField):
                 defaults.update({"widget": AdminBigIntegerFieldWidget})
+            elif isinstance(encrypted_field, EncryptedTextField):
+                defaults.update({"widget": AdminTextareaWidget})
         kwargs.update(defaults)
         return self.model._meta.get_field(self.encrypted_field_name).formfield(**kwargs)
 

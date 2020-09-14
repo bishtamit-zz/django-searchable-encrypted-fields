@@ -72,6 +72,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "encrypted_fields_test.wsgi.application"
 
 
+# Testing 'manage.py makemigrations' requires an empty migrations folder
+if os.environ.get("TEST_PG_MIGRATIONS"):
+    MIGRATION_MODULES = {
+        "encrypted_fields_test": "encrypted_fields_test.test_pg_migrations"
+    }
+if os.environ.get("TEST_SQLITE_MIGRATIONS"):
+    MIGRATION_MODULES = {
+        "encrypted_fields_test": "encrypted_fields_test.test_sqlite_migrations"
+    }
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 

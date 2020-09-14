@@ -15,8 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import DemoListView, DemoCreateView, DemoUpdateView
 
 urlpatterns = [path("admin/", admin.site.urls)]
 urlpatterns += [
     path("accounts/", include("django.contrib.auth.urls")),
+]
+urlpatterns += [
+    path("demomodel/", DemoListView.as_view(), name="demomodel-list"),
+    path("demomodel/add/", DemoCreateView.as_view(), name="demomodel-add"),
+    path("demomodel/<int:pk>/", DemoUpdateView.as_view(), name="demomodel-update"),
 ]

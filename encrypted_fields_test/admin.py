@@ -18,8 +18,16 @@ class DemoModelAdmin(admin.ModelAdmin):
         "date",
         "_date_data",
         "date_2",
+        "text",
+        "_text_data",
     )
-    readonly_fields = ("_name_data", "_number_data", "_email_data", "_date_data")
+    readonly_fields = (
+        "_name_data",
+        "_number_data",
+        "_email_data",
+        "_date_data",
+        "_text_data",
+    )
 
     search_fields = ("email__exact", "name__exact", "date__exact", "number__exact")
 

@@ -68,10 +68,12 @@ But when using `update()` you need to provide the value to both fields:
 ```python
 Person.objects.filter(name="Jo").update(name="Bob", _name_data="Bob")
 ```
-A SearchField inherits the validators and formfield (widget) from its associated EncryptedField. So:
+A SearchField inherits the validators and default formfield (widget) from its associated EncryptedField. So:
 
-1. Do not add validators or form widgets to SearchFields (they will be ignored), add them to the associated EncryptedField instead.
+1. Do not add validators (they will be ignored), add them to the associated EncryptedField instead.
 2. Do not include the EncryptedField in forms, instead just display the SearchField.
+3. Typically you should add `editable=False` to the EncryptedField.
+4. You can override the SearchField widget in a `ModelForm` as usual (see the `encrypted_fields_test` app.
 
 **Note** Although unique validation (and unique constraints at the database level) for an EncryptedField makes little sense, it is possible to add `unique=True` to a SearchField.
 
@@ -116,3 +118,10 @@ If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION
 `django-searchable-encrypted-fields` is tested with Django(2.1, 2.2, 3.0, 3.1) on Python(3.6, 3.7, 3.8) using SQLite and PostgreSQL (10 and 11).
 
 Test coverage is at 96%.
+
+## More on testing
+Please see the `encrypted_fields_test` app (in the gitlab repo) for some example admin site and model form implementations.
+
+In our test app, the `User` model uses a SearchField for the username. This means that when creating a superuser you must provide the `--username` argument: `python manage.py createsuperuser --username bob` to avoid an error.
+
+Final note of interest: the tox test suite runs `python manage.py makemigrations` for every environment with an empty initial migration directory. This helps ensure the test app will work as expected in all tested environments.
