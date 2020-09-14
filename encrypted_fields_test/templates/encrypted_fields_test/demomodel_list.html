@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h2>Demo Model entries</h2>
+<p><a href="{% url 'demomodel-add' %}">Add a DemoModel entry</a> </p>
+  <ul>
+      {% for entry in object_list %}
+          <li><a href="{% url 'demomodel-update' pk=entry.pk %}">{{ entry.pk }}</a> Name: {{ entry.name }} Email: {{ entry.email }}</li>
+      {% endfor %}
+  </ul>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.core import validators
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.urls import reverse
 from encrypted_fields import fields
 
 
@@ -84,6 +85,10 @@ class SearchDateTime(models.Model):
 
 
 class DemoModel(models.Model):
+    """Typically you should add 'editable=False' to a SearchField's companion
+    EncryptedField. We have not done that here to be able to view them in Admin
+    and ModelForms, for demonstration purposes."""
+
     _email_data = fields.EncryptedEmailField()
     email = fields.SearchField(hash_key="123abc", encrypted_field_name="_email_data")
     _name_data = fields.EncryptedCharField(
@@ -99,9 +104,16 @@ class DemoModel(models.Model):
     )
     _number_data = fields.EncryptedPositiveSmallIntegerField()
     number = fields.SearchField(hash_key="123abc", encrypted_field_name="_number_data")
+    _text_data = fields.EncryptedTextField(
+        help_text="A text area. Not typically used with a SearchField."
+    )
+    text = fields.SearchField(hash_key="123abc", encrypted_field_name="_text_data")
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("demomodel-list")
 
 
 class User(AbstractUser):
@@ -111,7 +123,9 @@ class User(AbstractUser):
 
     username_validator = UnicodeUsernameValidator()
     _username = fields.EncryptedCharField(
-        max_length=150, validators=[username_validator]
+        max_length=150,
+        validators=[username_validator],
+        editable=False,
     )
     username = fields.SearchField(
         hash_key="abc123",
