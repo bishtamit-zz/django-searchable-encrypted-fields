@@ -226,12 +226,16 @@ class SearchField(models.CharField):
         if hash_key is None:
             raise ImproperlyConfigured("you must supply a hash_key")
         self.hash_key = hash_key
+
         if encrypted_field_name is None:
             raise ImproperlyConfigured(
                 "you must supply the name of the accompanying Encrypted Field"
                 " that will hold the data"
             )
+        if not isinstance(encrypted_field_name, str):
+            raise ImproperlyConfigured("'encrypted_field_name' must be a string")
         self.encrypted_field_name = encrypted_field_name
+
         if kwargs.get("primary_key"):
             raise ImproperlyConfigured(
                 "{} does not support primary_key=True.".format(self.__class__.__name__)
