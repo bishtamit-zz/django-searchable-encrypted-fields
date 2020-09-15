@@ -265,10 +265,16 @@ class SearchField(models.CharField):
         return SEARCH_HASH_PREFIX + hashlib.sha256(v.encode()).hexdigest()
 
     def formfield(self, **kwargs):
-        """Use formfield from self.encrypted_field_name,
-        but using this field's verbose_name as the label.
+        """Use formfield from self.encrypted_field_name, passing kwargs along
+        (eg custom widget/help_text/label kwargs).
 
-        If called by Admin Panel then change to appropriate widget.
+        if 'label' is not in kwargs then add this field's 'verbose_name' as 'label',
+        otherwise the default 'verbose_name' of the encrypted field will be used in
+        the widget.
+
+        If called by Admin Panel, with the default widget ('AdminTextInputWidget'),
+        in kwargs, then change to appropriate default admin widget for the encrypted
+        field class.
         """
         defaults = {}
         if kwargs.get("label") is None:
@@ -299,7 +305,11 @@ class SearchField(models.CharField):
         return self.model._meta.get_field(self.encrypted_field_name).formfield(**kwargs)
 
     def clean(self, value, model_instance):
-        """Validate value against the validators from self.encrypted_field_name."""
+        """Validate value against the validators from self.encrypted_field_name.
+        Any validators on SearchField will be ignored.
+
+        SearchField's 'max_length' constraint will still be enforced at the database
+        level, but applied to the saved hash value."""
         return model_instance._meta.get_field(self.encrypted_field_name).clean(
             value, model_instance
         )
@@ -317,7 +327,8 @@ def get_prep_lookup_error(self):
 
 
 for name, lookup in models.Field.class_lookups.items():
-    """Register inappropriate lookups with our error handler"""
+    """Register inappropriate lookups with our error handler.
+    We allow 'isnull' for EncryptedField and 'isnull' and 'exact' for SearchField."""
     # Dynamically create classes that inherit from the right lookups
     if name != "isnull":
         lookup_class = type(
