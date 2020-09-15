@@ -30,4 +30,7 @@ urlpatterns += [
 ]
 router = routers.DefaultRouter()
 router.register(r"demomodel", DemoModelViewset, basename="api-demomodel")
-urlpatterns += [path("api/", include(router.urls))]
+urlpatterns += [
+    path("api/", include(router.urls)),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+]
