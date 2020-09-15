@@ -122,6 +122,8 @@ Test coverage is at 96%.
 ## More on testing
 Please see the `encrypted_fields_test` app (in the gitlab repo) for some example admin site and model form implementations.
 
+There is also a basic DjangoRestFramework implementation with a `ModelSerializer` and `ModelViewSet`.
+
 In our test app, the `User` model uses a SearchField for the username. This means that when creating a superuser you must provide the `--username` argument: `python manage.py createsuperuser --username bob` to avoid an error.
 
 Final note of interest: the tox test suite runs `python manage.py makemigrations` for every environment with an empty initial migration directory. This helps ensure the test app will work as expected in all tested environments.
