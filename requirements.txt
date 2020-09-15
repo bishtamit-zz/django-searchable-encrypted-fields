@@ -9,3 +9,4 @@ coverage==4.5.2  # https://github.com/nedbat/coveragepy
 django-coverage-plugin==1.6.0  # https://github.com/nedbat/django_coverage_plugin
 tox==3.7.0
 black==20.8b1
+djangorestframework==3.11.1

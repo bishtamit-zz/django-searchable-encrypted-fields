@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
 from .views import DemoListView, DemoCreateView, DemoUpdateView
+from .api_views import DemoModelViewset
 
 urlpatterns = [path("admin/", admin.site.urls)]
 urlpatterns += [
@@ -26,3 +28,6 @@ urlpatterns += [
     path("demomodel/add/", DemoCreateView.as_view(), name="demomodel-add"),
     path("demomodel/<int:pk>/", DemoUpdateView.as_view(), name="demomodel-update"),
 ]
+router = routers.DefaultRouter()
+router.register(r"demomodel", DemoModelViewset, basename="api-demomodel")
+urlpatterns += [path("api/", include(router.urls))]

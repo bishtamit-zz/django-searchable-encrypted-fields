@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "encrypted_fields",
     "encrypted_fields_test",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
