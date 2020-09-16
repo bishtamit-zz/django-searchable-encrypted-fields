@@ -120,7 +120,7 @@ If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION
 Test coverage is at 96%.
 
 ## More on testing
-Please see the `encrypted_fields_test` app (in the gitlab repo) for some example admin site and model form implementations.
+Please see the `encrypted_fields_test` app (in the gitlab repo) for some example admin site and model form implementations. Just run `pip install -r requirements.txt`, `python manage.py migrate` and `python manage.py runserver` to get started using SQLite.
 
 There is also a basic DjangoRestFramework implementation with a `ModelSerializer` and `ModelViewSet`.
 

@@ -14,13 +14,16 @@ from django.contrib.admin.widgets import (
     AdminEmailInputWidget,
     AdminSplitDateTime,
     AdminDateWidget,
+    AdminTextareaWidget,
 )
+from django.forms import TextInput, Textarea
 from django.contrib.auth import get_user_model
 from django.test import Client
 
 from encrypted_fields import fields
+from encrypted_fields.fields import is_hashed_already
 
-from . import models
+from .. import models
 
 
 pytestmark = pytest.mark.django_db
@@ -48,6 +51,25 @@ def test_must_have_hash_key():
 def test_must_have_encrypted_field_name():
     with pytest.raises(ImproperlyConfigured):
         fields.SearchField(hash_key="aa", encrypted_field_name=None)
+
+
+def test_encrypted_field_name_is_string():
+    with pytest.raises(ImproperlyConfigured):
+        fields.SearchField(hash_key="aa", encrypted_field_name=1)
+
+
+@pytest.mark.parametrize(
+    "value, result",
+    [
+        ("xx2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824", True),
+        ("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824", False),
+        ("xx2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e730433", False),
+        ("xx2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b982q", False),
+    ],
+)
+def test_is_hashed_already(value, result):
+    outcome = is_hashed_already(value)
+    assert outcome == result
 
 
 @pytest.mark.parametrize(
@@ -138,44 +160,68 @@ def test_validation():
     m.full_clean(exclude=["value"])
 
 
-def test_form_field():
-    """Test widget swapping when called by Admin Panel"""
-    kwargs = {"widget": AdminTextInputWidget}
-    m = models.SearchInt(search=9)
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminIntegerFieldWidget)
+class TestFormField:
+    def test_admin_panel_widgets(self):
+        """Test widget swapping when called by Admin Panel"""
+        kwargs = {"widget": AdminTextInputWidget}
+        m = models.SearchInt(search=9)
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminIntegerFieldWidget)
 
-    m = models.SearchBigInt(search=99)
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminBigIntegerFieldWidget)
+        m = models.SearchBigInt(search=99)
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminBigIntegerFieldWidget)
 
-    m = models.SearchSmallInt(search=99)
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminIntegerFieldWidget)
+        m = models.SearchSmallInt(search=99)
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminIntegerFieldWidget)
 
-    m = models.SearchPosSmallInt(search=99)
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminIntegerFieldWidget)
+        m = models.SearchPosSmallInt(search=99)
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminIntegerFieldWidget)
 
-    m = models.SearchPosInt(search=99)
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminIntegerFieldWidget)
+        m = models.SearchPosInt(search=99)
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminIntegerFieldWidget)
 
-    m = models.SearchEmail(search="foo@bar.com")
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminEmailInputWidget)
+        m = models.SearchEmail(search="foo@bar.com")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminEmailInputWidget)
 
-    m = models.SearchChar(search="hello")
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminTextInputWidget)
+        m = models.SearchChar(search="hello")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminTextInputWidget)
 
-    m = models.SearchDate(search="2019-03-03")
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminDateWidget)
+        m = models.SearchDate(search="2019-03-03")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminDateWidget)
 
-    m = models.SearchDateTime(search="2019-03-03")
-    x = m._meta.get_field("search").formfield(**kwargs)
-    assert isinstance(x.widget, AdminSplitDateTime)
+        m = models.SearchDateTime(search="2019-03-03")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminSplitDateTime)
+
+        m = models.SearchText(search="hello")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        assert isinstance(x.widget, AdminTextareaWidget)
+
+    def test_custom_kwargs(self):
+        """Test kwargs are passed to EncryptedField's 'formfield' method."""
+        kwargs = {"widget": TextInput, "label": "Foo", "help_text": "help"}
+        m = models.SearchText(search="hello")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        # Default widget would be Textarea, not TextInput
+        assert isinstance(x.widget, TextInput)
+        assert x.label == "Foo"
+        assert x.help_text == "help"
+
+    def test_empty_kwargs(self):
+        kwargs = {}
+        m = models.SearchText(search="hello")
+        x = m._meta.get_field("search").formfield(**kwargs)
+        # Default widget for a Textarea
+        assert isinstance(x.widget, Textarea)
+        # By default we use the SearchField label
+        assert x.label == "Search"
 
 
 class TestCustomUserModel:

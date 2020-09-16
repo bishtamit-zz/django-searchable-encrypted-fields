@@ -7,7 +7,7 @@ from django.utils import timezone
 import pytest
 
 from encrypted_fields import fields
-from . import models
+from .. import models
 
 DATE1 = date.today()
 DATE2 = DATE1 + timedelta(days=2)
