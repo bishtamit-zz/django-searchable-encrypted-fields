@@ -104,6 +104,13 @@ class TestEncryptedField:
         vals = f.validators
         assert isinstance(vals, (list, tuple)) is True
 
+    @pytest.mark.parametrize("value", [b"abc", "1234567890abcdef"])
+    def test_decrypt_nonce_checks(self, value):
+        f = fields.EncryptedCharField()
+        with pytest.raises(ValueError) as e:
+            f.decrypt(value)
+        assert "Data is corrupted" in str(e)
+
 
 @pytest.mark.parametrize(
     "model,vals",

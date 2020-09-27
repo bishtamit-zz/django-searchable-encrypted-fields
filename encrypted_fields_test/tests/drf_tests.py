@@ -32,6 +32,7 @@ def test_crud(api_client):
     assert response_data[0]["date"] == "1999-10-25"
     assert response_data[0]["text"] == "some text"
     assert response_data[0]["number"] == 2
+    assert response_data[0]["info"] == ""
 
     new_bad_email = {"email": "foo"}
     response = api_client.patch(

@@ -108,9 +108,17 @@ class DemoModel(models.Model):
         help_text="A text area. Not typically used with a SearchField."
     )
     text = fields.SearchField(hash_key="123abc", encrypted_field_name="_text_data")
+    info = fields.EncryptedCharField(
+        blank=True,
+        null=False,
+        max_length=20,
+        help_text="Char field, required at db level, without a default and blank=True",
+    )
+    created_at = fields.EncryptedDateTimeField(auto_now_add=True)
+    updated_at = fields.EncryptedDateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.pk}: {self.name}"
 
     def get_absolute_url(self):
         return reverse("demomodel-list")

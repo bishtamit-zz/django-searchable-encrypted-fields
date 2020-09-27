@@ -39,6 +39,11 @@ class EncryptedFieldMixin(models.Field):
     """A field that encrypts values with AES 256 symmetric encryption,
     using Pycryptodome.
 
+    Note: Be careful not to change/alter a pre-existing regular django field to be an
+    EncryptedField. The data for existing rows will be unencrypted in the database and
+    appear 'corrupted' when trying to decrypt/fetch it.
+    Instead, add the new EncryptedField to the model and do a data-migration
+    to transfer data from the old field.
     """
 
     def __init__(self, *args, **kwargs):
@@ -75,6 +80,10 @@ class EncryptedFieldMixin(models.Field):
 
     def decrypt(self, value):
         nonce = value[:16]
+        # Perform same nonce checks here as Pycryptodome, so we can raise a more user
+        # friendly error message
+        if not isinstance(nonce, (bytes, bytearray, memoryview)) or len(nonce) != 16:
+            raise ValueError("Data is corrupted.")
         tag = value[16:32]
         cypher_text = value[32:]
         counter = 0
@@ -89,12 +98,20 @@ class EncryptedFieldMixin(models.Field):
                 counter += 1
                 continue
             return plaintext.decode()
-        raise ValueError("AES Key incorrect or message corrupted")
+        raise ValueError("AES Key incorrect or data is corrupted")
 
     def get_internal_type(self):
         return self._internal_type
 
     def get_db_prep_save(self, value, connection):
+        if self.empty_strings_allowed and value == bytes():
+            # This tackles a corner case effecting string-based (eg Char/Text) fields
+            # during migrations when null=False, blank=True and no default has been declared.
+            # Because we are a BinaryField, a value of bytes() is provided instead of str().
+            # See https://github.com/django/django/blob/2.2.16/django/db/backends/base/schema.py#L215
+            # We change this to "" to prevent str(bytes()), ie a literal "b''" being
+            # used as the default to populate pre-existing records.
+            value = ""
         value = super().get_db_prep_save(value, connection)
         if value is not None:
             encrypted_value = self.encrypt(value)
@@ -217,6 +234,7 @@ class SearchField(models.CharField):
 
     Notes:
          Do not use model.objects.update() unless you update both the SearchField and the associated EncryptedField.
+         Always add a SearchField to a model, don't change/alter an existing regular django field.
     """
 
     description = "A secure SearchField to accompany an EncryptedField"

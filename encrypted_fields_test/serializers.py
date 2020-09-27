@@ -5,7 +5,7 @@ from .models import DemoModel
 
 class DemoModelSerializer(serializers.ModelSerializer):
     # Unaccompanied EncryptedFields do not need to be declared.
-    # They work just as expected. Eg 'date_2'
+    # They work just as expected. Eg 'date_2', 'info'
     #
     # SearchFields should be declared with the appropriate serializer Field, otherwise
     # they will be a 'serializer.CharField(max_length=66)' and validation will not be
@@ -19,4 +19,4 @@ class DemoModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DemoModel
-        fields = ["id", "name", "email", "date", "date_2", "number", "text"]
+        fields = ["id", "name", "email", "date", "date_2", "number", "text", "info"]

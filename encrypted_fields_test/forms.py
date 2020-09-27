@@ -6,7 +6,7 @@ from .models import DemoModel
 class DemoModelForm(ModelForm):
     class Meta:
         model = DemoModel
-        fields = ["name", "email", "date", "date_2", "number", "text"]
+        fields = ["name", "email", "date", "date_2", "number", "text", "info"]
         labels = {
             "text": "Overridden Text label in ModelForm",
         }
