@@ -100,6 +100,18 @@ class EncryptedIPAddressField(EncryptedFieldMixin, models.GenericIPAddressField)
     pass
 ```
 Please let us know if you have problems when doing this.
+## Add EncryptedFields to your model, don't alter existing fields
+**Stand alone EncryptedFields:** 
+
+Be careful not to change/alter a pre-existing regular django field to be an
+EncryptedField. The data for existing rows will be unencrypted in the database and
+appear 'corrupted' when trying to decrypt/fetch it.
+Instead, add the new EncryptedField to the model and do a data-migration
+to transfer data from the old field.
+
+**SearchField with EncryptedField:**
+
+The same goes for SearchFields: add the new SearchField and Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the EncryptedField automatically).
 ## Generating Encryption Keys
 You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
