@@ -126,6 +126,11 @@ Note: encryption keys **must** be hex encoded and 32 bytes
 **Important**: use different hash_key values for each SearchField and make sure they are different from any keys in `settings.FIELD_ENCRYPTION_KEYS`.
 ## Rotating Encryption Keys
 If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION_KEYS` with a new key. This new key (the first in the list) will be used for encrypting/decrypting all data. If decrypting data fails (because it was encrypted with an older key), each key in the list is tried.
+A model instance will start using the new encryption key the next time they are accessed.
+
+You can do a data-migration, simply fetching and saving all objects, to force a complete rotation to the new encryption key.
+
+Be sure to keep all old encryption keys in the list until you are certain all objects have rotated to the new key.
 ## Compatability
 `django-searchable-encrypted-fields` is tested with Django(2.1, 2.2, 3.0, 3.1) on Python(3.6, 3.7, 3.8) using SQLite and PostgreSQL (10 and 11).
 

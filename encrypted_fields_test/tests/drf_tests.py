@@ -40,7 +40,19 @@ def test_crud(api_client):
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    new_bad_name = {"name": "thisiswaytoolongforthevalidator"}
+    new_bad_number = {"number": "foo"}
+    response = api_client.patch(
+        reverse("api-demomodel-detail", kwargs={"pk": pk}), data=new_bad_number
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    new_bad_date = {"date": "foo"}
+    response = api_client.patch(
+        reverse("api-demomodel-detail", kwargs={"pk": pk}), data=new_bad_date
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    new_bad_name = {"name": "toolongforthevalidator"}
     response = api_client.patch(
         reverse("api-demomodel-detail", kwargs={"pk": pk}), data=new_bad_name
     )
@@ -52,7 +64,10 @@ def test_crud(api_client):
     )
     assert response.status_code == status.HTTP_200_OK
     response_data = response.json()
-    print(response_data)
     assert response_data["email"] == "a@b.com"
-    # name is still unchanged.
+    # other data is still unchanged.
     assert response_data["name"] == "Foo"
+    assert response_data["date"] == "1999-10-25"
+    assert response_data["text"] == "some text"
+    assert response_data["number"] == 2
+    assert response_data["info"] == ""

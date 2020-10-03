@@ -153,7 +153,7 @@ def test_validation():
     m = models.SearchEmail(search="sometext.com")
     with pytest.raises(ValidationError):
         m.full_clean(exclude=["value"])
-    # has SearchField has max_len of 66, this should pass despite this
+    # SearchField has max_len of 66, this should pass despite this
     m = models.SearchText(
         search="12345678901234567890123456789012345678901234567890123456789012345678901234567890qwertyuiop"
     )
