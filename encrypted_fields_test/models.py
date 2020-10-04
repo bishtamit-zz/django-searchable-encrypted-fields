@@ -124,6 +124,32 @@ class DemoModel(models.Model):
         return reverse("demomodel-list")
 
 
+class DemoMigrationModel(models.Model):
+    """A model to demonstrate and test migrations from a regular django field to an
+    EncryptedField, regular django field to a SearchField and also an EncryptedField to
+    a SearchField.
+
+    See the 'migrations' directory and tests."""
+
+    data = models.CharField(max_length=10, default="hi")
+    info = models.CharField(max_length=10, default="")
+    # Used to demo migrating 'data' to an EncryptedField
+    encrypted_data = fields.EncryptedCharField(max_length=20, default="hi")
+    # Used to demo migrating 'info' to a SearchField (with associated EncryptedField):
+    encrypted_info = fields.EncryptedCharField(max_length=20)
+    searchable_encrypted_info = fields.SearchField(
+        hash_key="abc", default="", encrypted_field_name="encrypted_info"
+    )
+    # Used to demo migrating 'encrypted_data' to a SearchField:
+    _encrypted_data = fields.EncryptedCharField(max_length=20)
+    searchable_encrypted_data = fields.SearchField(
+        hash_key="abcd", default="hi", encrypted_field_name="_encrypted_data"
+    )
+
+    def __str__(self):
+        return self.info
+
+
 class User(AbstractUser):
     """Example of replacing 'username' with Search and Encryption fields.
 
