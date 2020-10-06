@@ -8,7 +8,6 @@ pytestmark = pytest.mark.django_db
 
 
 def test_data_migrations(settings):
-    DemoMigrationModel.objects.create(data="bar")
     kwargs = {
         "app_label": "encrypted_fields_test",
         "verbosity": 0,
