@@ -56,6 +56,7 @@ def test_data_migrations(settings):
     enc_fields = ["encrypted_data", "encrypted_info", "_encrypted_data"]
     for enc_field in enc_fields:
         f = DemoMigrationModel._meta.get_field(enc_field)
+        assert f.keys != settings.FIELD_ENCRYPTION_KEYS
         del f.keys
 
     obj = DemoMigrationModel.objects.first()
@@ -67,3 +68,7 @@ def test_data_migrations(settings):
     assert obj.searchable_encrypted_info == "foo"
     assert obj.searchable_encrypted_data == "bye"
     assert obj._encrypted_data == "bye"
+    # We are using the new correct keys
+    for enc_field in enc_fields:
+        f = DemoMigrationModel._meta.get_field(enc_field)
+        assert f.keys == settings.FIELD_ENCRYPTION_KEYS
