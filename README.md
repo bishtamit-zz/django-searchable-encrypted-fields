@@ -4,8 +4,9 @@ This package is for you if you would like to encrypt model field data "in app" -
 **Why another encrypted field package?**
 
 1. We use AES-256 encryption with GCM mode (via the Pycryptodome library).
-2. It is easy to generate appropriate encryption keys with `secrets.token_hex(32)` from the standard library.
-3. You can make 'exact' search lookups when also using the SearchField.
+2. Encryption keys never leave the app.
+3. It is easy to generate appropriate encryption keys with `secrets.token_hex(32)` from the standard library.
+4. You can make 'exact' search lookups when also using the SearchField.
 
 ## Install & Setup
 ```shell
@@ -132,7 +133,7 @@ to transfer data from the old field.
 
 The same goes for SearchFields: add the new SearchField and new Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the new EncryptedField automatically).
 
-**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data!
+**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data! How? Why? When adding a new field to a model, Django will update each existing row's new field to have the default value. The default value might be `None` or `""` even if `default=` is not defined in your field. If the new field is a SearchField then the associated EncryptedField will also be updated to the SearchField's default value.
 ## Generating Encryption Keys
 You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
