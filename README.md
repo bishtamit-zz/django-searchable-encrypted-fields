@@ -38,7 +38,29 @@ class Person(models.Model):
 ```
 You can use all the usual field arguments and add validators as normal.
 Note, however, that primary_key, unique and db_index are not supported because they do not make sense for encrypted data.
-
+### Migrations
+Always add a new EncryptedField and do a data-migration, rather than alter an existing regular Django model field.
+See the `encrypted_fields_test` app for an example.
+### Included EncryptedField classes
+The following are included:
+```python
+"EncryptedFieldMixin",
+"EncryptedTextField",
+"EncryptedCharField",
+"EncryptedEmailField",
+"EncryptedIntegerField",
+"EncryptedDateField",
+"EncryptedDateTimeField",
+"EncryptedBigIntegerField",
+"EncryptedPositiveIntegerField",
+"EncryptedPositiveSmallIntegerField",
+"EncryptedSmallIntegerField",
+```
+Note that, although untested, you should be able to extend other regular Django model field classes like this:
+```python
+class EncryptedIPAddressField(EncryptedFieldMixin, models.GenericIPAddressField):
+    pass
+```
 
 ## Using a SearchField along with an EncryptedField
 ```python
@@ -68,39 +90,23 @@ But when using `update()` you need to provide the value to both fields:
 ```python
 Person.objects.filter(name="Jo").update(name="Bob", _name_data="Bob")
 ```
+###Please note:
 A SearchField inherits the validators and default formfield (widget) from its associated EncryptedField. So:
 
 1. Do not add validators (they will be ignored), add them to the associated EncryptedField instead.
 2. Do not include the EncryptedField in forms, instead just display the SearchField.
 3. Typically you should add `editable=False` to the EncryptedField.
-4. You can override the SearchField widget in a `ModelForm` as usual (see the `encrypted_fields_test` app.
+4. You can override the SearchField widget in a `ModelForm` as usual (see the `encrypted_fields_test` app).
+5. Since SearchFields are the input for their EncryptedField, put your `default="foo""` on the SearchField. Any `default` on the EncryptedField will be overridden.
 
 **Note** Although unique validation (and unique constraints at the database level) for an EncryptedField makes little sense, it is possible to add `unique=True` to a SearchField.
 
 An example of when this makes sense is in a custom user model, where the `username` field is replaced with an `EncryptedCharField` and `SearchField`. Please see the custom user model in `encrypted_fields_test.models` and its tests for an example.
 
-## Included EncryptedField classes
-The following are included:
-```python
-"EncryptedFieldMixin",
-"EncryptedTextField",
-"EncryptedCharField",
-"EncryptedEmailField",
-"EncryptedIntegerField",
-"EncryptedDateField",
-"EncryptedDateTimeField",
-"EncryptedBigIntegerField",
-"EncryptedPositiveIntegerField",
-"EncryptedPositiveSmallIntegerField",
-"EncryptedSmallIntegerField",
-```
-Note that, although untested, you should be able to extend other regular Django model field classes like this:
-```python
-class EncryptedIPAddressField(EncryptedFieldMixin, models.GenericIPAddressField):
-    pass
-```
 Please let us know if you have problems when doing this.
-## Add EncryptedFields to your model, don't alter existing fields
+## Migrations: Add Search/EncryptedFields to your model, don't alter existing fields
+You are encouraged to look at the demo migrations in the `encrypted_fields_test` app.
+
 **Stand alone EncryptedFields:** 
 
 Be careful not to change/alter a pre-existing regular django field to be an
@@ -111,7 +117,9 @@ to transfer data from the old field.
 
 **SearchField with EncryptedField:**
 
-The same goes for SearchFields: add the new SearchField and Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the EncryptedField automatically).
+The same goes for SearchFields: add the new SearchField and new Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the new EncryptedField automatically).
+
+**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data!
 ## Generating Encryption Keys
 You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
@@ -129,6 +137,7 @@ If you want to rotate the encryption key just prepend `settings.FIELD_ENCRYPTION
 A model instance will start using the new encryption key the next time they are accessed.
 
 You can do a data-migration, simply fetching and saving all objects, to force a complete rotation to the new encryption key.
+See the `encrypted_fields_test` app for an example.
 
 Be sure to keep all old encryption keys in the list until you are certain all objects have rotated to the new key.
 ## Compatability

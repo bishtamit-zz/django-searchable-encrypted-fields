@@ -7,6 +7,9 @@ def migrate_data(apps, schema_editor):
     """Demonstrates migrating from an EncryptedCharField -> SearchField (with a
     different associated EncryptedCharField).
 
+    *IMPORTANT!* Never add a SearchField and point it to an *existing* EncryptedField,
+    or you will lose all your data!
+
     This process is basically the same as for regular CharField -> SearchField."""
     demo_migration_model = apps.get_model('encrypted_fields_test', 'DemoMigrationModel')
     for obj in demo_migration_model.objects.all():
