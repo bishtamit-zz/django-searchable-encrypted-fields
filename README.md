@@ -133,7 +133,7 @@ to transfer data from the old field.
 
 The same goes for SearchFields: add the new SearchField and new Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the new EncryptedField automatically).
 
-**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data! How? Why? When adding a new field to a model, Django will update each existing row's new field to have the default value. The default value might be `None` or `""` even if `default=` is not defined in your field. If the new field is a SearchField then the associated EncryptedField will also be updated to the SearchField's default value.
+**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data! How? Why? When adding a new field to a model, Django will update each existing row's new field to have the default value. The default value might be `None` or `""` even if `default=` is not defined in your field. If the new field is a SearchField then the associated EncryptedField will also be updated to the SearchField's default value. This is almost certainly not what you want, even if you did define a default for it.
 ## Generating Encryption Keys
 You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
