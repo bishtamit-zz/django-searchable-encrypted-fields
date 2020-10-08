@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.core import validators
 from django.contrib.auth.models import AbstractUser
@@ -84,10 +85,30 @@ class SearchDateTime(models.Model):
     search = fields.SearchField(hash_key="abc123", encrypted_field_name="value")
 
 
+class SearchCharWithDefault(models.Model):
+    value = fields.EncryptedCharField(max_length=25, default="foo")
+    search = fields.SearchField(hash_key="abc123", encrypted_field_name="value")
+
+
+class SearchDateWithDefault(models.Model):
+    value = fields.EncryptedDateField(default=datetime.date.today)
+    search = fields.SearchField(hash_key="abc123", encrypted_field_name="value")
+
+
+class SearchIntWithDefault(models.Model):
+    value = fields.EncryptedIntegerField(
+        validators=[validators.MaxValueValidator(10)], default=2
+    )
+    search = fields.SearchField(hash_key="abc123", encrypted_field_name="value")
+
+
 class DemoModel(models.Model):
-    """Typically you should add 'editable=False' to a SearchField's companion
-    EncryptedField. We have not done that here to be able to view them in Admin
-    and ModelForms, for demonstration purposes."""
+    """Note that all regulare kwargs are added to EncryptedFields and not SearchFields.
+    Eg 'default=', 'null=', 'blank='.
+
+    Also note that we declare the SearchField *after* its EncryptedField. This is only
+    important when using DRF ModelSerializers, but never the less should be the standard
+    way of doing it."""
 
     _email_data = fields.EncryptedEmailField()
     email = fields.SearchField(hash_key="123abc", encrypted_field_name="_email_data")
@@ -114,6 +135,21 @@ class DemoModel(models.Model):
         max_length=20,
         help_text="Char field, required at db level, without a default and blank=True",
     )
+    # Examples with defaults
+    _default_date_data = fields.EncryptedDateField(default=datetime.date.today)
+    default_date = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_date_data"
+    )
+    _default_number_data = fields.EncryptedPositiveSmallIntegerField(default=1)
+    default_number = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_number_data"
+    )
+    _default_char_data = fields.EncryptedCharField(default="foo default", max_length=20)
+    default_char = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_char_data"
+    )
+
+    # typical use case
     created_at = fields.EncryptedDateTimeField(auto_now_add=True)
     updated_at = fields.EncryptedDateTimeField(auto_now=True)
 
@@ -136,14 +172,30 @@ class DemoMigrationModel(models.Model):
     # Used to demo migrating 'data' to an EncryptedField
     encrypted_data = fields.EncryptedCharField(max_length=20, default="hi")
     # Used to demo migrating 'info' to a SearchField (with associated EncryptedField):
-    encrypted_info = fields.EncryptedCharField(max_length=20)
+    encrypted_info = fields.EncryptedCharField(max_length=20, default="")
     searchable_encrypted_info = fields.SearchField(
-        hash_key="abc", default="", encrypted_field_name="encrypted_info"
+        hash_key="abc", encrypted_field_name="encrypted_info"
     )
     # Used to demo migrating 'encrypted_data' to a SearchField:
-    _encrypted_data = fields.EncryptedCharField(max_length=20)
+    _encrypted_data = fields.EncryptedCharField(max_length=20, default="hi")
     searchable_encrypted_data = fields.SearchField(
-        hash_key="abcd", default="hi", encrypted_field_name="_encrypted_data"
+        hash_key="abcd", encrypted_field_name="_encrypted_data"
+    )
+    # New fields with defaults added 'later' in a different migration.
+    _default_date = fields.EncryptedDateField(default=datetime.date.today)
+    searchable_default_date = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_date"
+    )
+    _default_number = fields.EncryptedPositiveSmallIntegerField(default=1)
+    searchable_default_number = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_number"
+    )
+    _default_char = fields.EncryptedCharField(default="foo default", max_length=20)
+    searchable_default_char = fields.SearchField(
+        hash_key="123abc", encrypted_field_name="_default_char"
+    )
+    default_encrypted_char = fields.EncryptedCharField(
+        max_length=20, default="encrypted hi"
     )
 
     def __str__(self):
@@ -159,7 +211,6 @@ class User(AbstractUser):
     _username = fields.EncryptedCharField(
         max_length=150,
         validators=[username_validator],
-        editable=False,
     )
     username = fields.SearchField(
         hash_key="abc123",

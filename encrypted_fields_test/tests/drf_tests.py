@@ -1,7 +1,10 @@
+import datetime
 import pytest
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
+
+from ..models import DemoModel
 
 
 pytestmark = pytest.mark.django_db
@@ -13,6 +16,8 @@ def api_client():
 
 
 def test_crud(api_client):
+    today = datetime.date.today()
+    today_string = today.strftime("%Y-%m-%d")
     data = {
         "name": "Foo",
         "email": "foo@bar.com",
@@ -33,6 +38,9 @@ def test_crud(api_client):
     assert response_data[0]["text"] == "some text"
     assert response_data[0]["number"] == 2
     assert response_data[0]["info"] == ""
+    assert response_data[0]["default_date"] == today_string
+    assert response_data[0]["default_number"] == 1
+    assert response_data[0]["default_char"] == "foo default"
 
     new_bad_email = {"email": "foo"}
     response = api_client.patch(
@@ -71,3 +79,12 @@ def test_crud(api_client):
     assert response_data["text"] == "some text"
     assert response_data["number"] == 2
     assert response_data["info"] == ""
+    assert response_data["default_date"] == today_string
+    assert response_data["default_number"] == 1
+    assert response_data["default_char"] == "foo default"
+
+    # Test SearchFields properly populated
+    assert DemoModel.objects.get(email="a@b.com")
+    assert DemoModel.objects.get(name="Foo")
+    assert DemoModel.objects.get(number=2)
+    assert DemoModel.objects.get(date=datetime.date(1999, 10, 25))

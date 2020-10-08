@@ -4,6 +4,7 @@ from django.test import Client
 from django.urls import reverse
 
 from ..forms import DemoModelForm
+from ..models import DemoModel
 
 
 pytestmark = pytest.mark.django_db
@@ -117,9 +118,19 @@ def test_view(client):
     assert response_data.date == datetime.date(1999, 10, 25)
     assert response_data.text == "some text"
     assert response_data.number == 2
+    # check defaults
     assert response_data.info == ""
+    assert response_data.default_number == 1
+    assert response_data.default_char == "foo default"
+    assert response_data.default_date == datetime.date.today()
 
     response = client.post(
         reverse("demomodel-update", kwargs={"pk": pk}), data=new_bad_email
     )
     assert "Enter a valid email address" in str(response.content)
+
+    # Test SearchFields properly populated
+    assert DemoModel.objects.get(email="foo@bar.com")
+    assert DemoModel.objects.get(name="Foo")
+    assert DemoModel.objects.get(number=2)
+    assert DemoModel.objects.get(date=datetime.date(1999, 10, 25))

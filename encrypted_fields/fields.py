@@ -235,6 +235,16 @@ class SearchField(models.CharField):
     Notes:
          Do not use model.objects.update() unless you update both the SearchField and the associated EncryptedField.
          Always add a SearchField to a model, don't change/alter an existing regular django field.
+
+    Note on Defaults:
+        To make sure the expected 'default=' value is used (in both SearchField and EncryptedField),
+        the SearchField must always use the EncryptedField's 'default=' value.
+        This ensures the correct default is used in both fields for:
+        1. Initial values in forms
+        2. Migrations (adding defaults to existing rows)
+        3. Saving model instances
+        Having different defaults on the SearchField and Encrypted field, eg only setting
+        default on one of them, leads to some unexpected and strange behaviour.
     """
 
     description = "A secure SearchField to accompany an EncryptedField"
@@ -255,12 +265,20 @@ class SearchField(models.CharField):
         self.encrypted_field_name = encrypted_field_name
 
         if kwargs.get("primary_key"):
+            raise ImproperlyConfigured("SearchField does not support primary_key=True.")
+        if "default" in kwargs:
+            # We always use EncryptedField's default.
             raise ImproperlyConfigured(
-                "{} does not support primary_key=True.".format(self.__class__.__name__)
+                f"SearchField does not support 'default='. Set 'default=' on '{self.encrypted_field_name}' instead"
             )
-        kwargs["db_index"] = True  # it is a field for searching!
+        if "db_index" not in kwargs:
+            # if not specified we should index by default.
+            kwargs["db_index"] = True  # it is a field for searching!
         kwargs["max_length"] = 64 + len(SEARCH_HASH_PREFIX)  # will be sha256 hex digest
         kwargs["null"] = True  # should be nullable, in case data field is nullable.
+        kwargs[
+            "blank"
+        ] = True  # to be consistent with 'null'. Forms are not based on SearchField anyway.
         super().__init__(*args, **kwargs)
 
     def deconstruct(self):
@@ -272,11 +290,22 @@ class SearchField(models.CharField):
             kwargs["encrypted_field_name"] = self.encrypted_field_name
         return name, path, args, kwargs
 
+    def has_default(self):
+        """Always use the EncryptedFields default"""
+        return self.model._meta.get_field(self.encrypted_field_name).has_default()
+
+    def get_default(self):
+        """Always use EncryptedField's default."""
+        return self.model._meta.get_field(self.encrypted_field_name).get_default()
+
     def get_prep_value(self, value):
         if value is None:
             return value
         # coerce to str before encoding and hashing
+
         # NOTE: not sure what happens when the str format for date/datetime is changed??
+        # Should not matter as we are dealing with a datetime object in this case.
+        # Eg str(datetime(10, 9, 2020))
         value = str(value)
 
         if is_hashed_already(value):
