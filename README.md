@@ -78,8 +78,8 @@ The EncryptedField is the "real" field and so should be the appropriate field ty
 ### Example usage
 ```python
 class Person(models.Model):
-    _name_data = fields.EncryptedCharField(max_length=50, null=True/False)
-    name = fields.SearchField(hash_key="f164ec6bd...794a9a0b", encrypted_field_name="_name_data", default="")
+    _name_data = fields.EncryptedCharField(max_length=50, default="", null=True/False)
+    name = fields.SearchField(hash_key="f164ec6bd...794a9a0b", encrypted_field_name="_name_data")
     favorite_number = fields.EncryptedIntegerField()
     city = models.CharField(max_length=255) # regular Django model field
 ```
@@ -104,11 +104,11 @@ But when using `update()` you need to provide the value to both fields:
 Person.objects.filter(name="Jo").update(name="Bob", _name_data="Bob")
 ```
 ### Please note:
-A SearchField inherits the validators and default formfield (widget) from its associated EncryptedField. So:
+A SearchField inherits the validators, default value and default formfield (widget) from its associated EncryptedField. So:
 
 1. Do not add validators (they will be ignored), add them to the associated EncryptedField instead.
 2. Use `null=`, `blank=` and `default=` on the EncryptedField, not the SearchField.
-3. Do not include the EncryptedField in forms, instead just display the SearchField.
+3. Do not include the EncryptedField in forms, only include the SearchField.
 4. Typically you should avoid `editable=False` in the EncryptedField - it prevents validation.
 5. You can override the SearchField widget in a `ModelForm` as usual (see the `encrypted_fields_test` app).
 6. By convention, declare the EncryptedField *before* the SearchField in your Model.
@@ -133,7 +133,7 @@ to transfer data from the old field.
 
 The same goes for SearchFields: add the new SearchField and new Encrypted field to the model. Then do a data-migration to transfer data from the old field to the SearchField (the SearchField will populate the new EncryptedField automatically).
 
-**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or you will lose all your data! How? Why? When adding a new field to a model, Django will update each existing row's new field to have the default value. The default value might be `None` or `""` even if `default=` is not defined in your field. If the new field is a SearchField then the associated EncryptedField will also be updated to the SearchField's default value. This is almost certainly not what you want, even if you did define a default for it.
+**IMPORTANT!** Never add a SearchField and point it to an **existing** EncryptedField, or your SearchField will have the wrong value, and you might lose all your data! How? Why? When adding a new field to a model, Django will update each existing row's new field to have the default value. Note that the default value might be `None` or `""` even if `default=` is not defined in your field. If the new field is a SearchField then it will be saved with the EncryptedField's default value. This is almost certainly not what you want, even if you did define a default for it.
 ## Generating Encryption Keys
 You can use `secrets` from the standard library. It will print appropriate hex-encoded keys to the terminal, ready to be used in `settings.FIELD_ENCRYPTION_KEYS` or as a hash_key for a SearchField:
 ```shell
