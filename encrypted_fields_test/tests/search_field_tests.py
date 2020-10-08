@@ -1,5 +1,5 @@
-from datetime import date, datetime, timedelta
-import string
+from datetime import timedelta
+import datetime
 import os
 
 import pytest
@@ -30,9 +30,9 @@ pytestmark = pytest.mark.django_db
 
 User = get_user_model()
 
-DATE1 = date.today()
+DATE1 = datetime.date.today()
 DATE2 = DATE1 + timedelta(days=2)
-DATETIME1 = datetime.utcnow()
+DATETIME1 = datetime.datetime.utcnow()
 if os.environ.get("USE_PG"):  # sqlite is not timezone compatible but postgres is.
     DATETIME1 = timezone.now()
 DATETIME2 = DATETIME1 + timedelta(minutes=5)
@@ -56,6 +56,21 @@ def test_must_have_encrypted_field_name():
 def test_encrypted_field_name_is_string():
     with pytest.raises(ImproperlyConfigured):
         fields.SearchField(hash_key="aa", encrypted_field_name=1)
+
+
+def test_default_not_allowed():
+    with pytest.raises(ImproperlyConfigured):
+        fields.SearchField(hash_key="aa", encrypted_field_name="v", default="foo")
+
+
+def test_index_by_default():
+    f = fields.SearchField(hash_key="aa", encrypted_field_name="v")
+    assert f.db_index is True
+
+
+def test_db_index_allowed():
+    f = fields.SearchField(hash_key="aa", encrypted_field_name="v", db_index=False)
+    assert f.db_index is False
 
 
 @pytest.mark.parametrize(
@@ -137,6 +152,22 @@ class TestSearchFieldQueries:
             assert field_name in str(exc.value)
             assert lookup in str(exc.value)
             assert f"does not support '{lookup}' lookups" in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "model,val",
+    [
+        (models.SearchChar, ""),
+        (models.SearchCharWithDefault, "foo"),
+        (models.SearchIntWithDefault, 2),
+        (models.SearchDateWithDefault, datetime.date.today()),
+    ],
+)
+def test_defaults(db, model, val):
+    """Save with default value, then search by default value."""
+    m = model()
+    m.save()
+    model.objects.get(search=val)
 
 
 def test_validation():

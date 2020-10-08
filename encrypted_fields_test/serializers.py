@@ -17,6 +17,25 @@ class DemoModelSerializer(serializers.ModelSerializer):
     number = serializers.IntegerField(required=True)
     text = serializers.CharField(required=True)
 
+    # Let's add some read-only fields that are SearchFields.
+    # We declare them here instead of in `Meta.read_only_fields` to give them the
+    # correct type of serializer Field.
+    default_date = serializers.DateField(read_only=True)
+    default_number = serializers.IntegerField(read_only=True)
+    default_char = serializers.CharField(read_only=True)
+
     class Meta:
         model = DemoModel
-        fields = ["id", "name", "email", "date", "date_2", "number", "text", "info"]
+        fields = [
+            "id",
+            "name",
+            "email",
+            "date",
+            "date_2",
+            "number",
+            "text",
+            "info",
+            "default_date",
+            "default_number",
+            "default_char",
+        ]

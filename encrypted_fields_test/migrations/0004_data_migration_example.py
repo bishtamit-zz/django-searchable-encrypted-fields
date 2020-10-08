@@ -9,8 +9,6 @@ def migrate_data_and_info(apps, schema_editor):
 
      Note: we have not *altered* any fields. We have added new fields."""
     demo_migration_model = apps.get_model('encrypted_fields_test', 'DemoMigrationModel')
-    # Add a row if none exist - to test our data migrations on.
-    demo_migration_model.objects.get_or_create(data="bye", info="foo")
     # The actual data migration:
     for obj in demo_migration_model.objects.all():
         # Assigning obj.data to the new EncryptedField ensures the data is encrypted.
@@ -24,7 +22,7 @@ def migrate_data_and_info(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('encrypted_fields_test', '0002_demomigrationmodel'),
+        ('encrypted_fields_test', '0003_demomigrationmodel_add_more_fields'),
     ]
 
     operations = [

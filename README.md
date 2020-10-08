@@ -78,7 +78,7 @@ The EncryptedField is the "real" field and so should be the appropriate field ty
 ### Example usage
 ```python
 class Person(models.Model):
-    _name_data = fields.EncryptedCharField(max_length=50, editable=False, null=True/False)
+    _name_data = fields.EncryptedCharField(max_length=50, null=True/False)
     name = fields.SearchField(hash_key="f164ec6bd...794a9a0b", encrypted_field_name="_name_data", default="")
     favorite_number = fields.EncryptedIntegerField()
     city = models.CharField(max_length=255) # regular Django model field
@@ -107,11 +107,11 @@ Person.objects.filter(name="Jo").update(name="Bob", _name_data="Bob")
 A SearchField inherits the validators and default formfield (widget) from its associated EncryptedField. So:
 
 1. Do not add validators (they will be ignored), add them to the associated EncryptedField instead.
-2. Use `null=` and `blank=` on the EncryptedField, not the SearchField.
+2. Use `null=`, `blank=` and `default=` on the EncryptedField, not the SearchField.
 3. Do not include the EncryptedField in forms, instead just display the SearchField.
-4. Typically you should add `editable=False` to the EncryptedField.
+4. Typically you should avoid `editable=False` in the EncryptedField - it prevents validation.
 5. You can override the SearchField widget in a `ModelForm` as usual (see the `encrypted_fields_test` app).
-6. Since SearchFields are the input for their EncryptedField, put your `default="foo""` on the SearchField. Any `default` on the EncryptedField will be overridden.
+6. By convention, declare the EncryptedField *before* the SearchField in your Model.
 
 **Note** Although unique validation (and unique constraints at the database level) for an EncryptedField makes little sense, it is possible to add `unique=True` to a SearchField.
 

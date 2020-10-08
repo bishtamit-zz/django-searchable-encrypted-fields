@@ -17,7 +17,7 @@ def rotate_keys(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('encrypted_fields_test', '0004_data_migration_example_2'),
+        ('encrypted_fields_test', '0005_data_migration_example_2'),
     ]
 
     operations = [

@@ -22,7 +22,7 @@ def migrate_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('encrypted_fields_test', '0003_data_migration_example'),
+        ('encrypted_fields_test', '0004_data_migration_example'),
     ]
 
     operations = [
