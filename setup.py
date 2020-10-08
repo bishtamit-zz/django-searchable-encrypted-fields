@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="django-searchable-encrypted-fields",
-    version="0.1.8",
+    version="0.1.9",
     license="MIT",
     description="Django model fields encrypted using Pycryptodome AES-256 GCM.",
     long_description=open("README.md").read(),
